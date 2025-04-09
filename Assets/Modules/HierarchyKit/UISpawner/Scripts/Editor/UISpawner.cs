@@ -82,7 +82,9 @@ public class UISpawner : EditorWindow
         {
             CreateGameObject("Image", typeof(RectTransform), go =>
             {
-                go.AddComponent<UnityEngine.UI.Image>();
+                var image = go.AddComponent<UnityEngine.UI.Image>();
+                image.raycastTarget = false; // 關閉射線檢測
+                image.color = Color.white; // 預設顏色為白色
             });
         });
 
@@ -109,6 +111,7 @@ public class UISpawner : EditorWindow
                 var text = go.AddComponent<UnityEngine.UI.Text>();
                 text.text = "Default Text";
                 text.fontSize = 26;
+                text.raycastTarget = false; // 關閉射線檢測
                 text.alignment = TextAnchor.MiddleCenter;
                 text.color = Color.black;
             });
@@ -133,7 +136,8 @@ public class UISpawner : EditorWindow
                     Debug.LogWarning("TMP_Settings.defaultFontAsset is null. Please assign a default font asset in TMP Settings.");
                 }
 
-                text.color = Color.black;
+                text.color = Color.white; // 預設顏色為白色
+                text.raycastTarget = false; // 關閉射線檢測
             });
         });
 
