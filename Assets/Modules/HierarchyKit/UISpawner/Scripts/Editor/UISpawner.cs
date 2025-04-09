@@ -6,7 +6,7 @@ using UnityEditor.UIElements;
 using System.Collections.Generic;
 using TMPro;
 using System.IO;
-using System.Linq; 
+using System.Linq;
 public class UISpawner : EditorWindow
 {
     const string _uguiPrefab_PackagePath = "Packages/com.untiy.tools.hierarchykit/UISpawner/Resources/Prefab/UGUI/";
@@ -274,6 +274,7 @@ public class UISpawner : EditorWindow
         if (Selection.activeGameObject != null)
         {
             gameobject.transform.SetParent(Selection.activeGameObject.transform);
+            gameobject.transform.localPosition = Vector3.zero; // 將位置設為父物件的正中央
         }
 
         configure?.Invoke(gameobject);
