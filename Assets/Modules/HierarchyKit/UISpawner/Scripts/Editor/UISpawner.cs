@@ -9,8 +9,6 @@ using System.IO;
 using System.Linq;
 public class UISpawner : EditorWindow
 {
-    const string _uguiPrefab_PackagePath = "Packages/com.untiy.tools.hierarchykit/UISpawner/Resources/Prefab/UGUI/";
-    const string _uguiPrefab_AssetPath = "Assets/Modules/HierarchyKit/UISpawner/Resources/Prefab/";
     [SerializeField]
     private VisualTreeAsset m_VisualTreeAsset = default;
 
