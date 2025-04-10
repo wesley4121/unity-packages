@@ -319,7 +319,7 @@ public class UISpawner : EditorWindow
         // 如果本地專案中未找到，嘗試查找 Package 中的 Prefab 資料夾
         if (string.IsNullOrEmpty(prefabFolderPath))
         {
-            string packagePath = Path.GetFullPath("Packages/com.unity.tools.hierarchykit/UISpawner/Resources/Prefab");
+            string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "Resources/Prefab");
             if (Directory.Exists(packagePath))
             {
                 prefabFolderPath = packagePath;
@@ -332,7 +332,20 @@ public class UISpawner : EditorWindow
             return;
         }
 
-        string[] prefabFiles = Directory.GetFiles(prefabFolderPath, "*.prefab");
+        string[] prefabFiles;
+
+        // 如果是本地專案，使用 AssetDatabase 查找
+        if (prefabFolderPath.StartsWith("Assets"))
+        {
+            prefabFiles = AssetDatabase.FindAssets("t:Prefab", new[] { prefabFolderPath })
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .ToArray();
+        }
+        else
+        {
+            // 如果是 Package，使用 Directory 查找
+            prefabFiles = Directory.GetFiles(prefabFolderPath, "*.prefab");
+        }
 
         prefabItems.Clear();
         foreach (var prefabFile in prefabFiles)
