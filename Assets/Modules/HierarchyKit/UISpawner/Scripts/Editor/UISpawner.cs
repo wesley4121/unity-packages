@@ -352,6 +352,7 @@ public class UISpawner : EditorWindow
         {
             // 確保路徑相對於專案目錄
             var relativePath = prefabFile.Replace(Path.GetFullPath("Assets"), "Assets").Replace("\\", "/");
+            Debug.Log(@$"Loading prefab from path: {relativePath}");
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
             if (prefab != null)
             {
