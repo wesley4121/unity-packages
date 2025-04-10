@@ -319,7 +319,7 @@ public class UISpawner : EditorWindow
         // 如果本地專案中未找到，嘗試查找 Package 中的 Prefab 資料夾
         if (string.IsNullOrEmpty(prefabFolderPath))
         {
-            string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "Resources/Prefab");
+            string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "UISpawner/Resources/Prefab");
             if (Directory.Exists(packagePath))
             {
                 prefabFolderPath = packagePath;
