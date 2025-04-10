@@ -343,8 +343,22 @@ public class UISpawner : EditorWindow
         }
         else
         {
-            // 如果是 Package，使用 Directory 查找
+            // 如果是 Package，將資產複製到本地 Assets/Editor/UISpawner/Prefab 資料夾
+            string localPrefabFolder = "Assets/Editor/UISpawner/Prefab/";
+            if (!Directory.Exists(localPrefabFolder))
+            {
+                Directory.CreateDirectory(localPrefabFolder);
+            }
+
             prefabFiles = Directory.GetFiles(prefabFolderPath, "*.prefab");
+            foreach (var prefabFile in prefabFiles)
+            {
+                string fileName = Path.GetFileName(prefabFile);
+                string destinationPath = Path.Combine(localPrefabFolder, fileName);
+                File.Copy(prefabFile, destinationPath, true);
+            }
+
+            prefabFiles = Directory.GetFiles(localPrefabFolder, "*.prefab");
         }
 
         prefabItems.Clear();
@@ -352,7 +366,6 @@ public class UISpawner : EditorWindow
         {
             // 確保路徑相對於專案目錄
             var relativePath = prefabFile.Replace(Path.GetFullPath("Assets"), "Assets").Replace("\\", "/");
-            Debug.Log(@$"Loading prefab from path: {relativePath}");
             var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
             if (prefab != null)
             {
@@ -361,6 +374,10 @@ public class UISpawner : EditorWindow
                     ButtonText = prefab.name,
                     Prefab = prefab
                 });
+            }
+            else
+            {
+                Debug.LogWarning($"Failed to load prefab from path: {relativePath}");
             }
         }
 
