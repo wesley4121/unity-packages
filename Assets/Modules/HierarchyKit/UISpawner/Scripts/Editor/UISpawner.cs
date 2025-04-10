@@ -325,6 +325,8 @@ public class UISpawner : EditorWindow
                 prefabFolderPath = packagePath;
             }
         }
+        
+            Debug.Log($"Prefab folder path: {prefabFolderPath}");
 
         if (string.IsNullOrEmpty(prefabFolderPath) || !Directory.Exists(prefabFolderPath))
         {
