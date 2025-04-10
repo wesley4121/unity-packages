@@ -308,15 +308,27 @@ public class UISpawner : EditorWindow
 
     private void SetDefaultPrefabs()
     {
-        // 使用 FindAssets 查找 Prefab 資料夾
+        string prefabFolderPath = null;
+
+        // 使用 FindAssets 查找本地專案中的 Prefab 資料夾
         string[] folderGuids = AssetDatabase.FindAssets("t:Folder", new[] { "Assets" });
-        string prefabFolderPath = folderGuids
+        prefabFolderPath = folderGuids
             .Select(AssetDatabase.GUIDToAssetPath)
             .FirstOrDefault(path => path.EndsWith("Resources/Prefab"));
 
+        // 如果本地專案中未找到，嘗試查找 Package 中的 Prefab 資料夾
         if (string.IsNullOrEmpty(prefabFolderPath))
         {
-            Debug.LogWarning("Prefab folder not found in the project.");
+            string packagePath = Path.GetFullPath("Packages/com.unity.tools.hierarchykit/Resources/Prefab");
+            if (Directory.Exists(packagePath))
+            {
+                prefabFolderPath = packagePath;
+            }
+        }
+
+        if (string.IsNullOrEmpty(prefabFolderPath) || !Directory.Exists(prefabFolderPath))
+        {
+            Debug.LogWarning("Prefab folder not found in the project or package.");
             return;
         }
 
