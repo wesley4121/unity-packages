@@ -319,14 +319,12 @@ public class UISpawner : EditorWindow
         // 如果本地專案中未找到，嘗試查找 Package 中的 Prefab 資料夾
         if (string.IsNullOrEmpty(prefabFolderPath))
         {
-            string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "UISpawner/Resources/Prefab");
+            string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "Resources/Prefab");
             if (Directory.Exists(packagePath))
             {
                 prefabFolderPath = packagePath;
             }
         }
-        
-            Debug.Log($"Prefab folder path: {prefabFolderPath}");
 
         if (string.IsNullOrEmpty(prefabFolderPath) || !Directory.Exists(prefabFolderPath))
         {
@@ -345,14 +343,29 @@ public class UISpawner : EditorWindow
         }
         else
         {
-            // 如果是 Package，使用 Directory 查找
+            // 如果是 Package，將資產複製到本地 Assets 資料夾
+            string localPrefabFolder = "Assets/TempPrefabs/";
+            if (!Directory.Exists(localPrefabFolder))
+            {
+                Directory.CreateDirectory(localPrefabFolder);
+            }
+
             prefabFiles = Directory.GetFiles(prefabFolderPath, "*.prefab");
+            foreach (var prefabFile in prefabFiles)
+            {
+                string fileName = Path.GetFileName(prefabFile);
+                string destinationPath = Path.Combine(localPrefabFolder, fileName);
+                File.Copy(prefabFile, destinationPath, true);
+            }
+
+            prefabFiles = Directory.GetFiles(localPrefabFolder, "*.prefab");
         }
 
         prefabItems.Clear();
         foreach (var prefabFile in prefabFiles)
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabFile);
+            var relativePath = prefabFile.Replace(Path.GetFullPath("Assets"), "Assets").Replace("\\", "/");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
             if (prefab != null)
             {
                 prefabItems.Add(new PrefabItem
