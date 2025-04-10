@@ -310,13 +310,13 @@ public class UISpawner : EditorWindow
     {
         string prefabFolderPath = null;
 
-        // 使用 FindAssets 查找本地專案中的 Prefab 資料夾
+        // 優先查找本地專案中的 UISpawner/Resources/Prefab
         string[] folderGuids = AssetDatabase.FindAssets("t:Folder", new[] { "Assets" });
         prefabFolderPath = folderGuids
             .Select(AssetDatabase.GUIDToAssetPath)
-            .FirstOrDefault(path => path.EndsWith("Resources/Prefab"));
+            .FirstOrDefault(path => path.EndsWith("UISpawner/Resources/Prefab"));
 
-        // 如果本地專案中未找到，嘗試查找 Package 中的 Prefab 資料夾
+        // 如果本地專案中未找到，嘗試查找 Package 中的 UISpawner/Resources/Prefab
         if (string.IsNullOrEmpty(prefabFolderPath))
         {
             string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "UISpawner/Resources/Prefab");
@@ -325,8 +325,6 @@ public class UISpawner : EditorWindow
                 prefabFolderPath = packagePath;
             }
         }
-
-        Debug.Log($"Prefab folder path: {prefabFolderPath}");
 
         if (string.IsNullOrEmpty(prefabFolderPath) || !Directory.Exists(prefabFolderPath))
         {
@@ -352,7 +350,9 @@ public class UISpawner : EditorWindow
         prefabItems.Clear();
         foreach (var prefabFile in prefabFiles)
         {
-            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(prefabFile);
+            // 確保路徑相對於專案目錄
+            var relativePath = prefabFile.Replace(Path.GetFullPath("Assets"), "Assets").Replace("\\", "/");
+            var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
             if (prefab != null)
             {
                 prefabItems.Add(new PrefabItem
