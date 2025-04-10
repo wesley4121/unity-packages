@@ -87,7 +87,7 @@ public class UISpawner : EditorWindow
 
     private void InitializePrefabListConfig()
     {
-        string configPath = "Assets/Editor/UISpawnerConfig.asset";
+        string configPath = "Assets/Editor/UISpawner/UISpawnerConfig.asset";
         string directoryPath = Path.GetDirectoryName(configPath);
 
         // 確保目標目錄存在
@@ -133,6 +133,7 @@ public class UISpawner : EditorWindow
         var addPrefabButton = root.Q<UnityEngine.UIElements.Button>("AddPrefabButton");
         var removePrefabButton = root.Q<UnityEngine.UIElements.Button>("RemovePrefabButton");
         var setDefaultPrefabsButton = root.Q<UnityEngine.UIElements.Button>("SetDefaultPrefabsButton");
+        var clearPrefabListButton = root.Q<UnityEngine.UIElements.Button>("ClearPrefabListButton"); // 從 UXML 文件中查詢按鈕
 
         prefabListView.itemsSource = prefabItems;
         prefabListView.makeItem = CreatePrefabListViewItem;
@@ -141,7 +142,7 @@ public class UISpawner : EditorWindow
 
         addPrefabButton.clicked += () =>
         {
-            AddPrefabToList(null, root); // 使用新的方法新增 Prefab
+            AddPrefabToList(null, root);
         };
 
         removePrefabButton.clicked += () =>
@@ -149,7 +150,7 @@ public class UISpawner : EditorWindow
             if (prefabItems.Count > 0)
             {
                 prefabItems.RemoveAt(prefabItems.Count - 1);
-                SavePrefabListToConfig(); // 確保刪除的資料同步到 Config
+                SavePrefabListToConfig();
                 RefreshPrefabListViewAndButtons(root);
             }
         };
@@ -157,7 +158,14 @@ public class UISpawner : EditorWindow
         setDefaultPrefabsButton.clicked += () =>
         {
             SetDefaultPrefabs();
-            SavePrefabListToConfig(); // 確保預設資料同步到 Config
+            SavePrefabListToConfig();
+            RefreshPrefabListViewAndButtons(root);
+        };
+
+        clearPrefabListButton.clicked += () =>
+        {
+            prefabItems.Clear();
+            SavePrefabListToConfig();
             RefreshPrefabListViewAndButtons(root);
         };
     }
@@ -196,9 +204,20 @@ public class UISpawner : EditorWindow
                 if (!PrefabUtility.IsPartOfAnyPrefab(gameObject))
                 {
                     Debug.LogWarning("Only Prefabs are supported. Converting GameObject to Prefab.");
-                    string localPath = $"Assets/{gameObject.name}.prefab";
+                    string directoryPath = "Assets/Editor/UISpawner/Prefab/";
+
+                    // 確保目標目錄存在
+                    if (!Directory.Exists(directoryPath))
+                    {
+                        Directory.CreateDirectory(directoryPath);
+                    }
+
+                    string localPath = Path.Combine(directoryPath, $"{gameObject.name}.prefab");
                     var prefab = PrefabUtility.SaveAsPrefabAsset(gameObject, localPath);
                     item.Prefab = prefab;
+
+                    // 更新 ObjectField 的值為新生成的 Prefab
+                    objectField.value = prefab;
                 }
                 else
                 {
@@ -289,16 +308,19 @@ public class UISpawner : EditorWindow
 
     private void SetDefaultPrefabs()
     {
-        string prefabPath = AssetDatabase.GUIDToAssetPath(AssetDatabase.FindAssets("t:Folder Prefab")
-            .FirstOrDefault(guid => AssetDatabase.GUIDToAssetPath(guid).EndsWith("Prefab")));
+        // 使用 FindAssets 查找 Prefab 資料夾
+        string[] folderGuids = AssetDatabase.FindAssets("t:Folder", new[] { "Assets" });
+        string prefabFolderPath = folderGuids
+            .Select(AssetDatabase.GUIDToAssetPath)
+            .FirstOrDefault(path => path.EndsWith("Resources/Prefab"));
 
-        if (string.IsNullOrEmpty(prefabPath) || !Directory.Exists(prefabPath))
+        if (string.IsNullOrEmpty(prefabFolderPath))
         {
-            Debug.LogError($"Prefab path does not exist: {prefabPath}");
+            Debug.LogWarning("Prefab folder not found in the project.");
             return;
         }
 
-        string[] prefabFiles = Directory.GetFiles(prefabPath, "*.prefab");
+        string[] prefabFiles = Directory.GetFiles(prefabFolderPath, "*.prefab");
 
         prefabItems.Clear();
         foreach (var prefabFile in prefabFiles)
@@ -308,12 +330,14 @@ public class UISpawner : EditorWindow
             {
                 prefabItems.Add(new PrefabItem
                 {
-                    ButtonText = "+",
+                    ButtonText = prefab.name,
                     Prefab = prefab
                 });
             }
         }
-        rootVisualElement.Q<ListView>("PrefabListView").Rebuild();
+
+        rootVisualElement.Q<ListView>("PrefabListView")?.Rebuild();
+        GenerateDynamicButtons(rootVisualElement);
     }
 
     private void SavePrefabListToConfig()
