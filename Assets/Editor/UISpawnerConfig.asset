@@ -13,4 +13,7 @@ MonoBehaviour:
   m_Name: UISpawnerConfig
   m_EditorClassIdentifier: 
   prefabList:
+  - {fileID: 2307384286637991793, guid: e5403cd62f47d374d815f5a2795d5785, type: 3}
+  - {fileID: 8943301433122493319, guid: 34e63fcf42a5af5499484da7902c2e99, type: 3}
+  - {fileID: 8943301433122493319, guid: 34e63fcf42a5af5499484da7902c2e99, type: 3}
   - {fileID: 1774214591096446932, guid: f8eb95c10e307d545b8cc03a5876a25b, type: 3}

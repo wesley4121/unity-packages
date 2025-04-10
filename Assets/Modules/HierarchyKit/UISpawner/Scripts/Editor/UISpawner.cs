@@ -87,7 +87,15 @@ public class UISpawner : EditorWindow
 
     private void InitializePrefabListConfig()
     {
-        string configPath = "Assets/Modules/HierarchyKit/UISpawner/Resources/UISpawnerConfig.asset";
+        string configPath = "Assets/Editor/UISpawnerConfig.asset";
+        string directoryPath = Path.GetDirectoryName(configPath);
+
+        // 確保目標目錄存在
+        if (!Directory.Exists(directoryPath))
+        {
+            Directory.CreateDirectory(directoryPath);
+        }
+
         prefabListConfig = AssetDatabase.LoadAssetAtPath<UISpawnerConfig>(configPath);
 
         if (prefabListConfig == null)
