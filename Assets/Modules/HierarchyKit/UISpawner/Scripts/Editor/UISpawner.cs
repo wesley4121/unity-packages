@@ -13,6 +13,7 @@ public class UISpawner : EditorWindow
 
     private readonly List<PrefabItem> prefabItems = new();
     private UISpawnerConfig prefabListConfig;
+    private bool doNotUnpackPrefab = false; // 新增變數來追蹤 TOGGLE 狀態
 
     private class PrefabItem
     {
@@ -81,6 +82,16 @@ public class UISpawner : EditorWindow
                     // 展開時刷新 PrefabListView
                     root.Q<ListView>("PrefabListView")?.Rebuild();
                 }
+            });
+        }
+
+        // 監控 DoNotUnpackPrefabToggle 的變更
+        var doNotUnpackToggle = root.Q<Toggle>("DoNotUnpackPrefabToggle");
+        if (doNotUnpackToggle != null)
+        {
+            doNotUnpackToggle.RegisterValueChangedCallback(evt =>
+            {
+                doNotUnpackPrefab = evt.newValue;
             });
         }
     }
@@ -294,7 +305,10 @@ public class UISpawner : EditorWindow
             var instance = (GameObject)PrefabUtility.InstantiatePrefab(prefab);
             instance.name = objectName;
 
-            PrefabUtility.UnpackPrefabInstance(instance, PrefabUnpackMode.Completely, InteractionMode.UserAction);
+            if (!doNotUnpackPrefab)
+            {
+                PrefabUtility.UnpackPrefabInstance(instance, PrefabUnpackMode.Completely, InteractionMode.UserAction);
+            }
 
             if (Selection.activeGameObject != null)
             {
