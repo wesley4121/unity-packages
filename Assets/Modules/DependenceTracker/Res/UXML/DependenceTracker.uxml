@@ -1,0 +1,9 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" editor-extension-mode="True">
+    <engine:VisualElement style="flex-direction: column; height: 100%; width: 100%;">
+        <editor:ObjectField name="objectField" label="Select Object" object-type="UnityEngine.GameObject" allow-scene-objects="false" />
+        <engine:Label text="In Assets:" name="AssetsLabel" />
+        <engine:TreeView name="dependenciesTreeView_Assets" style="flex-grow: 1; height: 100%; width: 100%; unity-item-height: 20px; unity-indent-width: 15px;" />
+        <engine:Label text="In Packages:" name="PackagesLabel" />
+        <engine:TreeView name="dependenciesTreeView_Packages" style="flex-grow: 1; height: 100%; width: 100%; unity-item-height: 20px; unity-indent-width: 15px;" />
+    </engine:VisualElement>
+</engine:UXML>
