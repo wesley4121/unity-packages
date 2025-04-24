@@ -7,13 +7,13 @@ using System.IO;
 using System.Linq;
 namespace Modules.UIMaker
 {
-    public class UISpawner : EditorWindow
+    public class UIMaker : EditorWindow
     {
         [SerializeField]
         private VisualTreeAsset m_VisualTreeAsset = default;
 
         private readonly List<PrefabItem> prefabItems = new();
-        private UISpawnerConfig prefabListConfig;
+        private UIMakerConfig prefabListConfig;
         private bool doNotUnpackPrefab = false; // 新增變數來追蹤 TOGGLE 狀態
 
         private class PrefabItem
@@ -28,11 +28,11 @@ namespace Modules.UIMaker
             }
         }
 
-        [MenuItem("Tools/UISpawner")]
-        public static void DisplayUISpawner()
+        [MenuItem("Tools/UIMaker")]
+        public static void DisplayWindow()
         {
-            UISpawner wnd = GetWindow<UISpawner>();
-            wnd.titleContent = new GUIContent("UISpawner");
+            UIMaker wnd = GetWindow<UIMaker>();
+            wnd.titleContent = new GUIContent("UIMaker");
         }
 
         private void MonitorConfigChanges()
@@ -108,11 +108,11 @@ namespace Modules.UIMaker
                 Directory.CreateDirectory(directoryPath);
             }
 
-            prefabListConfig = AssetDatabase.LoadAssetAtPath<UISpawnerConfig>(configPath);
+            prefabListConfig = AssetDatabase.LoadAssetAtPath<UIMakerConfig>(configPath);
 
             if (prefabListConfig == null)
             {
-                prefabListConfig = ScriptableObject.CreateInstance<UISpawnerConfig>();
+                prefabListConfig = ScriptableObject.CreateInstance<UIMakerConfig>();
                 AssetDatabase.CreateAsset(prefabListConfig, configPath);
                 AssetDatabase.SaveAssets();
             }
