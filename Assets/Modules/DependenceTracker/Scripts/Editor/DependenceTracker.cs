@@ -1,17 +1,18 @@
+using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Collections.Generic;
-using UnityEditor.UIElements;
-using System.Linq;
 
 public class DependenceTracker : EditorWindow
 {
-    private Object selectedPrefab;
-    private DependencyLogic dependencyLogic;
+    [SerializeField]
+    private VisualTreeAsset m_VisualTreeAsset = default;
+    private Object selectedObject;
     private TreeView dependenciesTreeView;
     private TreeView dependenciesTreeView_Packages;
-
+    private bool autoSelectFromProject = false; // Toggle state
     [MenuItem("Tools/DependenceTracker")]
     public static void ShowExample()
     {
@@ -19,19 +20,20 @@ public class DependenceTracker : EditorWindow
         wnd.titleContent = new GUIContent("DependenceTracker");
     }
 
+
     public void CreateGUI()
     {
-        dependencyLogic = new DependencyLogic();
+        // Each editor window contains a root VisualElement object
+        VisualElement root = rootVisualElement;
 
-        // Load UXML
-        var visualTree = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UniGears/DependenceTracker/Res/UXML/DependenceTracker.uxml");
-        VisualElement rootFromUXML = visualTree.Instantiate();
-        rootVisualElement.Add(rootFromUXML);
+        // Instantiate UXML
+        VisualElement UXML = m_VisualTreeAsset.Instantiate();
+        root.Add(UXML);
 
         // Bind UI elements
-        var objectField = rootVisualElement.Q<ObjectField>("objectField");
-        dependenciesTreeView = rootFromUXML.Q<TreeView>("dependenciesTreeView_Assets");
-        dependenciesTreeView_Packages = rootFromUXML.Q<TreeView>("dependenciesTreeView_Packages");
+        var objectField = UXML.Q<ObjectField>("objectField");
+        dependenciesTreeView = UXML.Q<TreeView>("dependenciesTreeView_Assets");
+        dependenciesTreeView_Packages = UXML.Q<TreeView>("dependenciesTreeView_Packages");
 
         // Ensure TreeView is properly initialized
         dependenciesTreeView.reorderable = false; // Disable drag-and-drop
@@ -46,15 +48,91 @@ public class DependenceTracker : EditorWindow
 
         objectField.RegisterValueChangedCallback(evt =>
         {
-            selectedPrefab = evt.newValue;
+            selectedObject = evt.newValue;
             UpdateDependencies();
         });
+
+        // Bind refreshButton and add click event
+        var refreshButton = rootVisualElement.Q<Button>("refreshButton");
+        refreshButton.clicked += () =>
+        {
+            if (selectedObject != null)
+            {
+                UpdateDependencies();
+            }
+            else
+            {
+                Debug.LogWarning("No Object selected to refresh.");
+                dependenciesTreeView.SetRootItems(new List<TreeViewItemData<string>>()); // Clear the TreeView
+                dependenciesTreeView_Packages.SetRootItems(new List<TreeViewItemData<string>>()); // Clear the TreeView
+                dependenciesTreeView.Rebuild(); // Refresh the TreeView UI
+                dependenciesTreeView_Packages.Rebuild(); // Refresh the TreeView UI
+            }
+        };
+
+        // Bind auto-select toggle from UXML
+        var autoSelectToggle = rootVisualElement.Q<Toggle>("autoSelectToggle");
+        autoSelectToggle.value = autoSelectFromProject;
+        autoSelectToggle.RegisterValueChangedCallback(evt =>
+        {
+            autoSelectFromProject = evt.newValue;
+        });
+
+        // Monitor selection changes in the Project window
+        Selection.selectionChanged += OnProjectSelectionChanged;
 
         // Use selectionChanged event to handle item selection
         dependenciesTreeView.selectionChanged += OnTreeViewSelectionChanged;
         dependenciesTreeView_Packages.selectionChanged += OnTreeViewSelectionChanged;
-    }
 
+        // Customize TreeView item rendering
+        dependenciesTreeView.makeItem = () => new Label();
+        dependenciesTreeView.bindItem = (element, i) =>
+        {
+            var label = (Label)element;
+            var item = dependenciesTreeView.GetItemDataForIndex<string>(i);
+            label.text = item;
+            SetLabelColor(label, item); // Set color based on file type
+        };
+
+        dependenciesTreeView_Packages.makeItem = () => new Label();
+        dependenciesTreeView_Packages.bindItem = (element, i) =>
+        {
+            var label = (Label)element;
+            var item = dependenciesTreeView_Packages.GetItemDataForIndex<string>(i);
+            label.text = item;
+            SetLabelColor(label, item); // Set color based on file type
+        };
+
+    }
+        private void SetLabelColor(Label label, string item)
+    {
+        if (item.EndsWith(".cs"))
+        {
+            label.style.color = HexColor("#BFD641");
+        }
+        else if (item.EndsWith(".png"))
+        {
+
+            label.style.color = HexColor("#FFECA1");
+        }
+        else if (item.EndsWith(".mat"))
+        {
+            label.style.color = HexColor("#99BBFA");
+        }
+        else if (item.EndsWith(".prefab"))
+        {
+            label.style.color = HexColor("#98F5F9");
+        }
+        else if (item.EndsWith(".shader"))
+        {
+            label.style.color = HexColor("#CC6CE7");
+        }
+        else
+        {
+            label.style.color = Color.white;
+        }
+    }
     private void OnTreeViewSelectionChanged(IEnumerable<object> selectedItems)
     {
         foreach (var item in selectedItems)
@@ -73,18 +151,68 @@ public class DependenceTracker : EditorWindow
             }
         }
     }
+    private void OnProjectSelectionChanged()
+    {
+        if (autoSelectFromProject && Selection.activeObject != null)
+        {
+            selectedObject = Selection.activeObject;
+            var objectField = rootVisualElement.Q<ObjectField>("objectField");
+            objectField.value = selectedObject; // Update ObjectField
+            UpdateDependencies(); // Update dependencies automatically
+        }
+    }
+    private void OnDestroy()
+    {
+        // Unsubscribe from selection changes to avoid memory leaks
+        Selection.selectionChanged -= OnProjectSelectionChanged;
+    }
+    private Color HexColor(string hex)
+    {
+        ColorUtility.TryParseHtmlString(hex, out Color color);
+        return color;
+    }
 
     private void UpdateDependencies()
     {
-        if (selectedPrefab != null)
+        if (selectedObject != null)
         {
-            var dependencies = dependencyLogic.GetDependencies(selectedPrefab);
+            List<string> dependencies = new();
+
+            string objPath = AssetDatabase.GetAssetPath(selectedObject);
+            if (AssetDatabase.IsValidFolder(objPath))
+            {
+                // 如果是資料夾，取得所有資源
+                string[] guids = AssetDatabase.FindAssets("", new[] { objPath });
+                HashSet<string> allDeps = new HashSet<string>();
+                int total = guids.Length;
+                for (int i = 0; i < total; i++)
+                {
+                    string guid = guids[i];
+                    string assetPath = AssetDatabase.GUIDToAssetPath(guid);
+                    EditorUtility.DisplayProgressBar("Dependency Analysis", $"Analyzing resource: {assetPath}", (float)i / total);
+                    if (!AssetDatabase.IsValidFolder(assetPath))
+                    {
+                        var deps = AssetDatabase.GetDependencies(assetPath);
+                        foreach (var dep in deps)
+                            allDeps.Add(dep);
+                    }
+                }
+                dependencies = allDeps.ToList();
+                EditorUtility.ClearProgressBar();
+            }
+            else
+            {
+                EditorUtility.DisplayProgressBar("Dependency Analysis", "Analyzing resource...", 0.5f);
+                dependencies = GetDependencies(selectedObject);
+                EditorUtility.ClearProgressBar();
+            }
 
             if (dependencies == null || dependencies.Count == 0)
             {
-                Debug.LogWarning("No dependencies found for the selected prefab.");
-                dependenciesTreeView.Clear(); // Clear the TreeView if no dependencies are found.
-                dependenciesTreeView_Packages.Clear(); // Clear the TreeView if no dependencies are found.
+                EditorUtility.ClearProgressBar();
+                Debug.LogWarning("No dependencies found for the selected Object.");
+                dependenciesTreeView.Clear();
+                dependenciesTreeView_Packages.Clear();
                 return;
             }
 
@@ -92,67 +220,86 @@ public class DependenceTracker : EditorWindow
             var assetsDependencies = dependencies.Where(d => d.StartsWith("Assets")).ToList();
             var packagesDependencies = dependencies.Where(d => d.StartsWith("Packages")).ToList();
 
+            // Group and sort dependencies for Assets
+            var groupedAssetsDependencies = assetsDependencies
+                .GroupBy(d =>
+                {
+                    string extension = System.IO.Path.GetExtension(d).ToLower();
+                    switch (extension)
+                    {
+                        case ".cs": return "Scripts";
+                        case ".png":
+                        case ".jpg":
+                        case ".jpeg": return "Images";
+                        case ".mat": return "Materials";
+                        case ".prefab": return "Prefabs";
+                        case ".shader": return "Shaders";
+                        default: return "Others";
+                    }
+                })
+                .OrderBy(g => g.Key) // Sort groups alphabetically
+                .Select(g => new
+                {
+                    Key = g.Key,
+                    Items = g.OrderBy(item => item).ToList() // Sort items within each group
+                });
+
+            // Group and sort dependencies for Packages
+            var groupedPackagesDependencies = packagesDependencies
+                .GroupBy(d =>
+                {
+                    if (d.Contains("Unity")) return "Unity Packages";
+                    return "Other Packages";
+                })
+                .OrderBy(g => g.Key) // Sort groups alphabetically
+                .Select(g => new
+                {
+                    Key = g.Key,
+                    Items = g.OrderBy(item => item).ToList() // Sort items within each group
+                });
+
             // Create TreeView items for Assets
             var assetsTreeViewItems = new List<TreeViewItemData<string>>();
-            for (int i = 0; i < assetsDependencies.Count; i++)
+            int id = 0;
+            foreach (var group in groupedAssetsDependencies)
             {
-                assetsTreeViewItems.Add(new TreeViewItemData<string>(i, assetsDependencies[i]));
+                var groupItem = new TreeViewItemData<string>(id++, group.Key, group.Items.Select(item => new TreeViewItemData<string>(id++, item)).ToList());
+                assetsTreeViewItems.Add(groupItem);
             }
 
             // Create TreeView items for Packages
             var packagesTreeViewItems = new List<TreeViewItemData<string>>();
-            for (int i = 0; i < packagesDependencies.Count; i++)
+            foreach (var group in groupedPackagesDependencies)
             {
-                packagesTreeViewItems.Add(new TreeViewItemData<string>(i, packagesDependencies[i]));
+                var groupItem = new TreeViewItemData<string>(id++, group.Key, group.Items.Select(item => new TreeViewItemData<string>(id++, item)).ToList());
+                packagesTreeViewItems.Add(groupItem);
             }
 
             // Set items to respective TreeViews
             dependenciesTreeView.SetRootItems(assetsTreeViewItems);
             dependenciesTreeView_Packages.SetRootItems(packagesTreeViewItems);
 
+            // Expand all items in TreeViews
+            dependenciesTreeView.ExpandAll();
+            dependenciesTreeView_Packages.ExpandAll();
+
             // Force refresh TreeView UI
             dependenciesTreeView.Rebuild();
             dependenciesTreeView_Packages.Rebuild();
 
-            // Enable selection functionality
-            dependenciesTreeView.selectionType = SelectionType.Single;
-            dependenciesTreeView_Packages.selectionType = SelectionType.Single;
+            // Force layout update to fix display order issue
+            rootVisualElement.MarkDirtyRepaint();
         }
         else
         {
-            Debug.LogWarning("No prefab selected.");
-            dependenciesTreeView.Clear(); // Clear the TreeView if no prefab is selected.
-            dependenciesTreeView_Packages.Clear(); // Clear the TreeView if no prefab is selected.
+            Debug.LogWarning("No Object selected.");
+            dependenciesTreeView.Clear();
+            dependenciesTreeView_Packages.Clear();
         }
     }
-
-    private TreeViewItemData<string> BuildTreeViewItem(DependencyNode node, ref int idCounter)
-    {
-        // Sort children nodes: Assets/Modules/Shared first, then Assets/Modules/Features, then others alphabetically
-        var sortedChildren = node.Childrens
-            .OrderBy(child => !child.Path.StartsWith("Assets/Modules/Shared")) // Shared first
-            .ThenBy(child => !child.Path.StartsWith("Assets/Modules/Features")) // Features second
-            .ToList();
-
-        Debug.Log($"Building TreeViewItem for node: {node.Path}, with {sortedChildren.Count} children.");
-
-        var children = new List<TreeViewItemData<string>>();
-
-        foreach (var child in sortedChildren)
-        {
-            children.Add(BuildTreeViewItem(child, ref idCounter));
-            Debug.Log($"Child node added: {child.Path}");
-        }
-
-        return new TreeViewItemData<string>(idCounter++, node.Path, children);
-    }
-
-}
-public class DependencyLogic
-{
     public List<string> GetDependencies(Object obj)
     {
-        List<string> dependencies = new List<string>();
+        List<string> dependencies = new();
 
         if (obj != null)
         {
@@ -167,84 +314,9 @@ public class DependencyLogic
         }
         else
         {
-            Debug.LogWarning("Prefab is null.");
+            Debug.LogWarning("Object is null.");
         }
 
         return dependencies;
     }
-
-    public List<DependencyNode> GetDependenciesWithHierarchy(UnityEngine.Object obj)
-    {
-        List<DependencyNode> rootNodes = new List<DependencyNode>();
-
-        if (obj != null)
-        {
-            string prefabPath = AssetDatabase.GetAssetPath(obj);
-            string[] dependencyPaths = AssetDatabase.GetDependencies(prefabPath);
-
-            Dictionary<string, DependencyNode> nodeMap = new Dictionary<string, DependencyNode>();
-
-            foreach (var path in dependencyPaths)
-            {
-                string[] parts = path.Split('/');
-                DependencyNode currentNode = null;
-
-                for (int i = 0; i < parts.Length; i++)
-                {
-                    string subPath = string.Join("/", parts.Take(i + 1));
-
-                    if (!nodeMap.ContainsKey(subPath))
-                    {
-                        nodeMap[subPath] = new DependencyNode(subPath);
-                    }
-
-                    if (currentNode != null)
-                    {
-                        if (!currentNode.Childrens.Contains(nodeMap[subPath]))
-                        {
-                            currentNode.Childrens.Add(nodeMap[subPath]);
-                        }
-                    }
-                    else if (i == 0)
-                    {
-                        rootNodes.Add(nodeMap[subPath]);
-                    }
-
-                    currentNode = nodeMap[subPath];
-                }
-            }
-
-            // Sort children nodes: Assets first, then others, then Packages, all alphabetically
-            foreach (var node in nodeMap.Values)
-            {
-                node.Childrens = node.Childrens
-                    .OrderBy(child => !child.Path.StartsWith("Assets")) // Assets first
-                    .ThenBy(child => child.Path.StartsWith("Packages")) // Packages last
-                    .ThenBy(child => child.Path) // Alphabetical order
-                    .ToList();
-            }
-
-            // Sort root nodes as well
-            rootNodes = rootNodes
-                .OrderBy(node => !node.Path.StartsWith("Assets")) // Assets first
-                .ThenBy(node => node.Path.StartsWith("Packages")) // Packages last
-                .ThenBy(node => node.Path) // Alphabetical order
-                .ToList();
-        }
-
-        return rootNodes;
-    }
 }
-
-public class DependencyNode
-{
-    public string Path { get; set; }
-    public List<DependencyNode> Childrens { get; set; }
-
-    public DependencyNode(string path)
-    {
-        Path = path;
-        Childrens = new List<DependencyNode>();
-    }
-}
-
