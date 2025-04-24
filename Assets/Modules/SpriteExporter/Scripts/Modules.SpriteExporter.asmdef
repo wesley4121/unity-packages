@@ -1,6 +1,6 @@
 {
-    "name": "HotKeyExtensions",
-    "rootNamespace": "HotKeyExtensions",
+    "name": "Modules.SpriteExporter",
+    "rootNamespace": "Modules.SpriteExporter",
     "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],

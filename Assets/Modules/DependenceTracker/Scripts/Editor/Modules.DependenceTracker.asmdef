@@ -1,6 +1,6 @@
 {
-    "name": "UniGears.ScriptEditorSwicher",
-    "rootNamespace": "UniGears.ScriptEditorSwicher",
+    "name": "Modules.DependenceTracker",
+    "rootNamespace": "Modules.DependenceTracker",
     "references": [],
     "includePlatforms": [
         "Editor"

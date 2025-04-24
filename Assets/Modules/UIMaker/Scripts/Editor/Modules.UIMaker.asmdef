@@ -1,7 +1,9 @@
 {
-    "name": "UniGears.DependenceTracker",
-    "rootNamespace": "UniGears.DependenceTracker",
-    "references": [],
+    "name": "Modules.UIMaker",
+    "rootNamespace": "Modules.UIMaker",
+    "references": [
+        "Unity.TextMeshPro"
+    ],
     "includePlatforms": [
         "Editor"
     ],
@@ -9,7 +11,7 @@
     "allowUnsafeCode": false,
     "overrideReferences": false,
     "precompiledReferences": [],
-    "autoReferenced": false,
+    "autoReferenced": true,
     "defineConstraints": [],
     "versionDefines": [],
     "noEngineReferences": false

@@ -5,7 +5,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace UniGears.ScriptEditorSwicher
+namespace Modules.ScriptEditorSwicher
 {
     public class ScriptEditorSwicher : EditorWindow
     {

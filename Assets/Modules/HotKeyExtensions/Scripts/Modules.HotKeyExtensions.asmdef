@@ -1,12 +1,8 @@
 {
-    "name": "Module.HierarchyKit.UISpawner.Editor",
-    "rootNamespace": "Module.HierarchyKit.UISpawner.Editor",
-    "references": [
-        "Unity.TextMeshPro"
-    ],
-    "includePlatforms": [
-        "Editor"
-    ],
+    "name": "Modules.HotKeyExtensions",
+    "rootNamespace": "Modules.HotKeyExtensions",
+    "references": [],
+    "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
