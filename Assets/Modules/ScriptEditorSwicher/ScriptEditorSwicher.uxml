@@ -1,7 +1,0 @@
-<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
-    <Style src="project://database/Assets/Modules/ScriptEditorSwicher/ScriptEditorSwicher.uss?fileID=7433441132597879392&amp;guid=59c0289731f013f408e3193afa478376&amp;type=3#ScriptEditorSwicher" />
-    <engine:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
-        <engine:Label text="CurrentScriptEditor: &#10;" name="CurrentScriptEditor" style="align-items: center; opacity: 1; width: 134px;" />
-        <engine:DropdownField label="External Script Editor&#10;" name="ScriptEditorDropdown" />
-    </engine:VisualElement>
-</engine:UXML>

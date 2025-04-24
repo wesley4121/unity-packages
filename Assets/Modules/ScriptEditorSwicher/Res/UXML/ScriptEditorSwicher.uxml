@@ -1,0 +1,23 @@
+<engine:UXML xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:engine="UnityEngine.UIElements" xmlns:editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="True">
+    <Style src="project://database/Assets/UniGears/ScriptEditorSwicher/Scripts/Editor/ScriptEditorSwicher.uss?fileID=7433441132597879392&amp;guid=59c0289731f013f408e3193afa478376&amp;type=3#ScriptEditorSwicher" />
+    <engine:VisualElement style="flex-grow: 1; background-color: rgba(0, 0, 0, 0);">
+        <engine:ScrollView>
+            <engine:VisualElement style="flex-direction: column; align-items: center; padding: 10px;">
+                <engine:VisualElement name="CurrentScriptEditorContainer" style="flex-direction: row; align-items: center; margin-bottom: 10px;">
+                    <engine:Label text="Current Script Editor: " name="CurrentScriptEditorLabel" style="font-size: 14px; margin-right: 5px;" />
+                    <engine:Label name="CurrentScriptEditorName" style="font-size: 14px; font-weight: bold; color: rgb(0, 255, 0);" />
+                </engine:VisualElement>
+                <engine:DropdownField label="External Script Editor" name="ScriptEditorDropdown" style="margin-bottom: 10px; width: 300px;" />
+                <engine:Button name="SwitchScriptEditorButton" style="margin-top: 10px; flex-direction: column; align-items: center; width: 156px; height: 56px;">
+                    <engine:Image name="SwitchIcon" image="unity-icon-refresh" style="width: 24px; height: 24px; margin-bottom: 5px; margin-top: 5px;" />
+                    <engine:Label text="Switch Script Editor" style="font-size: 14px;" />
+                </engine:Button>
+                <engine:DropdownField label="Target Script Editor" name="TargetScriptEditorDropdown" style="margin-top: 10px; width: 300px;" />
+                <engine:VisualElement name="ProgressBarContainer" style="flex-direction: column; align-items: center; margin-top: 10px; display: none;">
+                    <engine:Label text="Applying Script Editor..." style="font-size: 14px; margin-bottom: 5px;" />
+                    <engine:ProgressBar name="ProgressBar" style="width: 300px; height: 10px;" />
+                </engine:VisualElement>
+            </engine:VisualElement>
+        </engine:ScrollView>
+    </engine:VisualElement>
+</engine:UXML>

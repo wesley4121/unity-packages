@@ -1,9 +1,9 @@
 {
-    "name": "com.wesley4121.tools.scripteditorswitcher",
-    "displayName": "ScriptEditorSwitcher",
+    "name": "com.unity.tools.scripteditorswicher",
+    "displayName": "ScriptEditorSwicher",
     "version": "1.0.0",
     "unity": "2019.4",
-    "description": "ScriptEditorSwitcher",
+    "description": "ScriptEditorSwicher",
     "relatedPackages": {},
     "dependencies": {}
 }

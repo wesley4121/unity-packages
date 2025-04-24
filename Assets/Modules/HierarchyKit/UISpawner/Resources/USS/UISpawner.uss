@@ -1,6 +1,0 @@
-#Prefix, #Separator, #Suffix {
-    border: 1px solid #cccccc;
-    border-radius: 3px;
-    padding: 5px;
-    margin-bottom: 10px;
-}
