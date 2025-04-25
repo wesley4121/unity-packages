@@ -23,6 +23,16 @@ namespace SpriteExporter
                 return;
             }
             Texture2D texture = AssetDatabase.LoadAssetAtPath<Texture2D>(spriteSheetPath);
+            if (texture == null)
+            {
+                Debug.LogError("Failed to load texture.");
+                return;
+            }
+            if (!texture.isReadable)
+            {
+                Debug.LogError("Texture is not readable. Please enable 'Read/Write Enabled' in the texture's import settings.");
+                return;
+            }
 
             string outputDirectoryPath = Path.Combine(Path.GetDirectoryName(spriteSheetPath), "ExportedSprites");
             if (!Directory.Exists(outputDirectoryPath))
