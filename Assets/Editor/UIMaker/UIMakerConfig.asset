@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5a044ef96f1e27c4e9bab553b0393a6e, type: 3}
+  m_Name: UIMakerConfig
+  m_EditorClassIdentifier: 
+  prefabList:
+  - {fileID: 2307384286637991793, guid: e5403cd62f47d374d815f5a2795d5785, type: 3}
+  - {fileID: 8943301433122493319, guid: 34e63fcf42a5af5499484da7902c2e99, type: 3}
+  - {fileID: 908778879979989263, guid: b73c03ddf039bbc4999154fc55a484a5, type: 3}
+  - {fileID: 7834035225118473183, guid: 99ea61f34d8e7454b9bbed3dcdf20de4, type: 3}
+  - {fileID: 8646366199438449603, guid: 9ad97ef20cb08ff4a955f8c8e4213ae4, type: 3}
+  - {fileID: 7622419864731491292, guid: 9c3a9026defb5df47af5e80ce428de30, type: 3}
+  - {fileID: 1733627691360483163, guid: 7dd534e03ba31464299e24ac200af1d9, type: 3}
+  - {fileID: 7044762570192139491, guid: 0ee3832d88c0993479c56c474e18ed77, type: 3}

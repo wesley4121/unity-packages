@@ -99,7 +99,7 @@ namespace Modules.UIMaker
 
         private void InitializePrefabListConfig()
         {
-            string configPath = "Assets/Editor/UISpawner/UISpawnerConfig.asset";
+            string configPath = "Assets/Editor/UIMaker/UIMakerConfig.asset";
             string directoryPath = Path.GetDirectoryName(configPath);
 
             // 確保目標目錄存在
@@ -222,7 +222,7 @@ namespace Modules.UIMaker
                     if (!PrefabUtility.IsPartOfAnyPrefab(gameObject))
                     {
                         Debug.LogWarning("Only Prefabs are supported. Converting GameObject to Prefab.");
-                        string directoryPath = "Assets/Editor/UISpawner/Prefab/";
+                        string directoryPath = "Assets/Editor/UIMaker/Prefab/";
 
                         // 確保目標目錄存在
                         if (!Directory.Exists(directoryPath))
@@ -331,16 +331,16 @@ namespace Modules.UIMaker
         {
             string prefabFolderPath = null;
 
-            // 優先查找本地專案中的 UISpawner/Resources/Prefab
+            // 優先查找本地專案中的 UIMaker/Resources/Prefab
             string[] folderGuids = AssetDatabase.FindAssets("t:Folder", new[] { "Assets" });
             prefabFolderPath = folderGuids
                 .Select(AssetDatabase.GUIDToAssetPath)
-                .FirstOrDefault(path => path.EndsWith("UISpawner/Resources/Prefab"));
+                .FirstOrDefault(path => path.EndsWith("UIMaker/Resources/Prefab"));
 
-            // 如果本地專案中未找到，嘗試查找 Package 中的 UISpawner/Resources/Prefab
+            // 如果本地專案中未找到，嘗試查找 Package 中的 UIMaker/Resources/Prefab
             if (string.IsNullOrEmpty(prefabFolderPath))
             {
-                string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "UISpawner/Resources/Prefab");
+                string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.uimaker"), "UIMaker/Resources/Prefab");
                 if (Directory.Exists(packagePath))
                 {
                     prefabFolderPath = packagePath;
@@ -364,8 +364,8 @@ namespace Modules.UIMaker
             }
             else
             {
-                // 如果是 Package，將資產複製到本地 Assets/Editor/UISpawner/Prefab 資料夾
-                string localPrefabFolder = "Assets/Editor/UISpawner/Prefab/";
+                // 如果是 Package，將資產複製到本地 Assets/Editor/UIMaker/Prefab 資料夾
+                string localPrefabFolder = "Assets/Editor/UIMaker/Prefab/";
                 if (!Directory.Exists(localPrefabFolder))
                 {
                     Directory.CreateDirectory(localPrefabFolder);
@@ -419,13 +419,13 @@ namespace Modules.UIMaker
 
         private void CreateDefaultPrefabs()
         {
-            string localPrefabFolder = "Assets/Editor/UISpawner/Prefab/";
-            string sourcePrefabFolder = "Assets/Modules/HierarchyKit/UISpawner/Resources/Prefab/";
+            string localPrefabFolder = "Assets/Editor/UIMaker/Prefab/";
+            string sourcePrefabFolder = "Assets/Modules/UIMaker/Resources/Prefab/";
 
-            // 如果本地專案中未找到，嘗試查找 Package 中的 UISpawner/Resources/Prefab
+            // 如果本地專案中未找到，嘗試查找 Package 中的 UIMaker/Resources/Prefab
             if (!Directory.Exists(sourcePrefabFolder))
             {
-                string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.hierarchykit"), "UISpawner/Resources/Prefab");
+                string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.uimaker"), "UIMaker/Resources/Prefab");
                 if (Directory.Exists(packagePath))
                 {
                     sourcePrefabFolder = packagePath;
