@@ -34,7 +34,8 @@ namespace SpriteExporter
                 return;
             }
 
-            string outputDirectoryPath = Path.Combine(Path.GetDirectoryName(spriteSheetPath), "ExportedSprites");
+            string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(spriteSheetPath);
+            string outputDirectoryPath = Path.Combine(Path.GetDirectoryName(spriteSheetPath), "ExportedSprites", fileNameWithoutExtension);
             if (!Directory.Exists(outputDirectoryPath))
             {
                 Directory.CreateDirectory(outputDirectoryPath);
@@ -51,7 +52,7 @@ namespace SpriteExporter
                 }
 
                 //Create a new texture for each sprite
-                Texture2D newTexture = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
+                Texture2D newTexture = new((int)sprite.rect.width, (int)sprite.rect.height);
                 Color[] pixels = texture.GetPixels((int)sprite.rect.x, (int)sprite.rect.y, (int)sprite.rect.width, (int)sprite.rect.height);
                 newTexture.SetPixels(pixels);
                 newTexture.Apply();
