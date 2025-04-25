@@ -2,7 +2,9 @@
     "name": "Modules.HotKeyExtensions",
     "rootNamespace": "Modules.HotKeyExtensions",
     "references": [],
-    "includePlatforms": [],
+    "includePlatforms": [
+        "Editor"
+    ],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
     "overrideReferences": false,
