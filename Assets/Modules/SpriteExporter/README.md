@@ -1,1 +1,1 @@
-# HierarchyKit
+# SpriteExporter
