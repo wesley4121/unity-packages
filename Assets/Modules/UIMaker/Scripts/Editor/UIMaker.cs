@@ -146,7 +146,6 @@ namespace Modules.UIMaker
             var removePrefabButton = root.Q<UnityEngine.UIElements.Button>("RemovePrefabButton");
             var setDefaultPrefabsButton = root.Q<UnityEngine.UIElements.Button>("SetDefaultPrefabsButton");
             var clearPrefabListButton = root.Q<UnityEngine.UIElements.Button>("ClearPrefabListButton");
-            var createDefaultPrefabsButton = root.Q<UnityEngine.UIElements.Button>("CreateDefaultPrefabsButton"); // 新增按鈕查詢
 
             prefabListView.itemsSource = prefabItems;
             prefabListView.makeItem = CreatePrefabListViewItem;
@@ -182,10 +181,7 @@ namespace Modules.UIMaker
                 RefreshPrefabListViewAndButtons(root);
             };
 
-            createDefaultPrefabsButton.clicked += () =>
-            {
-                CreateDefaultPrefabs(); // 綁定按鈕功能
-            };
+
         }
 
         private VisualElement CreatePrefabListViewItem()
@@ -421,47 +417,7 @@ namespace Modules.UIMaker
             AssetDatabase.SaveAssets();
         }
 
-        private void CreateDefaultPrefabs()
-        {
-            string localPrefabFolder = "Assets/Editor/UIMaker/Prefab/";
-            string sourcePrefabFolder = "Assets/Modules/UIMaker/Resources/Prefab/";
 
-            // 如果本地專案中未找到，嘗試查找 Package 中的 UIMaker/Resources/Prefab
-            if (!Directory.Exists(sourcePrefabFolder))
-            {
-                string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.uimaker"), "UIMaker/Resources/Prefab");
-                if (Directory.Exists(packagePath))
-                {
-                    sourcePrefabFolder = packagePath;
-                }
-                else
-                {
-                    Debug.LogError("Source prefab folder does not exist in project or package: " + sourcePrefabFolder);
-                    return;
-                }
-            }
-
-            // 確保目標資料夾存在
-            if (!Directory.Exists(localPrefabFolder))
-            {
-                Directory.CreateDirectory(localPrefabFolder);
-            }
-
-            // 複製來源資料夾中的所有 Prefab
-            string[] prefabFiles = Directory.GetFiles(sourcePrefabFolder, "*.prefab");
-            foreach (var prefabFile in prefabFiles)
-            {
-                string fileName = Path.GetFileName(prefabFile);
-                string destinationPath = Path.Combine(localPrefabFolder, fileName);
-
-                File.Copy(prefabFile, destinationPath, true);
-            }
-
-            // 手動刷新資產資料庫
-            AssetDatabase.Refresh();
-
-            Debug.Log("Default prefabs copied to: " + localPrefabFolder);
-        }
     }
 
 }
