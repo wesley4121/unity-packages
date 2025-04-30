@@ -329,92 +329,81 @@ namespace Modules.UIMaker
 
         private void SetDefaultPrefabs()
         {
-            string prefabFolderPath = null;
-
-            // 優先查找本地專案中的 UIMaker/Resources/Prefab
-            string[] folderGuids = AssetDatabase.FindAssets("t:Folder", new[] { "Assets" });
-            prefabFolderPath = folderGuids
-                .Select(AssetDatabase.GUIDToAssetPath)
-                .FirstOrDefault(path => path.EndsWith("UIMaker/Resources/Prefab"));
-
-            // 如果本地專案中未找到，嘗試查找 Package 中的 UIMaker/Resources/Prefab
-            bool isPackage = false;
-            if (string.IsNullOrEmpty(prefabFolderPath))
-            {
-                string packagePath = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.uimaker"), "UIMaker/Resources/Prefab");
-                if (Directory.Exists(packagePath))
-                {
-                    prefabFolderPath = packagePath;
-                    isPackage = true;
-                }
-            }
-
-            if (string.IsNullOrEmpty(prefabFolderPath) || !Directory.Exists(prefabFolderPath))
-            {
-                Debug.LogWarning("Prefab folder not found in the project or package.");
-                return;
-            }
-
+            prefabItems.Clear();
+            string projectPrefabFolder = "Assets/Modules/UIMaker/Resources/Prefab";
+            string packagePrefabFolder = Path.Combine(Path.GetFullPath("Packages/com.unity.tools.uimaker"), "Resources/Prefab");
+            string localPrefabFolder = "Assets/Editor/UIMaker/Prefab/";
             string[] prefabFiles;
 
-            if (!isPackage && prefabFolderPath.StartsWith("Assets"))
+            if (Directory.Exists(projectPrefabFolder))
             {
                 // 專案內 prefab
-                prefabFiles = AssetDatabase.FindAssets("t:Prefab", new[] { prefabFolderPath })
-                    .Select(AssetDatabase.GUIDToAssetPath)
-                    .ToArray();
+                prefabFiles = Directory.GetFiles(projectPrefabFolder, "*.prefab");
+                foreach (var prefabFile in prefabFiles)
+                {
+                    string relativePath = prefabFile.Replace("\\", "/");
+                    if (!relativePath.StartsWith("Assets/"))
+                    {
+                        string assetsPath = Path.GetFullPath("Assets").Replace("\\", "/");
+                        relativePath = relativePath.Replace(assetsPath, "Assets");
+                    }
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
+                    if (prefab != null)
+                    {
+                        prefabItems.Add(new PrefabItem
+                        {
+                            ButtonText = prefab.name,
+                            Prefab = prefab
+                        });
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Failed to load prefab from path: {relativePath}");
+                    }
+                }
             }
-            else
+            else if (Directory.Exists(packagePrefabFolder))
             {
-                // package 內 prefab，複製到本地 Assets/Editor/UIMaker/Prefab
-                string localPrefabFolder = "Assets/Editor/UIMaker/Prefab/";
+                // 複製 package 內 prefab 到本地 Assets/Editor/UIMaker/Prefab
                 if (!Directory.Exists(localPrefabFolder))
                 {
                     Directory.CreateDirectory(localPrefabFolder);
                 }
-
-                prefabFiles = Directory.GetFiles(prefabFolderPath, "*.prefab");
+                prefabFiles = Directory.GetFiles(packagePrefabFolder, "*.prefab");
                 foreach (var prefabFile in prefabFiles)
                 {
                     string fileName = Path.GetFileName(prefabFile);
                     string destinationPath = Path.Combine(localPrefabFolder, fileName);
                     File.Copy(prefabFile, destinationPath, true);
                 }
-
-                AssetDatabase.Refresh(); // 複製後刷新
-
+                AssetDatabase.Refresh();
                 prefabFiles = Directory.GetFiles(localPrefabFolder, "*.prefab");
-                // 轉成 Assets/ 開頭的相對路徑
-                prefabFiles = prefabFiles
-                    .Select(f => f.Replace("\\", "/"))
-                    .Select(f => f.Substring(f.IndexOf("Assets/")))
-                    .ToArray();
-            }
-
-            prefabItems.Clear();
-            foreach (var prefabFile in prefabFiles)
-            {
-                // 確保路徑為 Assets/ 開頭
-                string relativePath = prefabFile;
-                if (!relativePath.StartsWith("Assets/"))
+                foreach (var prefabFile in prefabFiles)
                 {
-                    // 若還是絕對路徑，轉成相對路徑
-                    string assetsPath = Path.GetFullPath("Assets").Replace("\\", "/");
-                    relativePath = prefabFile.Replace("\\", "/").Replace(assetsPath, "Assets");
-                }
-                var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
-                if (prefab != null)
-                {
-                    prefabItems.Add(new PrefabItem
+                    string relativePath = prefabFile.Replace("\\", "/");
+                    if (!relativePath.StartsWith("Assets/"))
                     {
-                        ButtonText = prefab.name,
-                        Prefab = prefab
-                    });
+                        string assetsPath = Path.GetFullPath("Assets").Replace("\\", "/");
+                        relativePath = relativePath.Replace(assetsPath, "Assets");
+                    }
+                    var prefab = AssetDatabase.LoadAssetAtPath<GameObject>(relativePath);
+                    if (prefab != null)
+                    {
+                        prefabItems.Add(new PrefabItem
+                        {
+                            ButtonText = prefab.name,
+                            Prefab = prefab
+                        });
+                    }
+                    else
+                    {
+                        Debug.LogWarning($"Failed to load prefab from path: {relativePath}");
+                    }
                 }
-                else
-                {
-                    Debug.LogWarning($"Failed to load prefab from path: {relativePath}");
-                }
+            }
+            else
+            {
+                Debug.LogWarning("Prefab folder not found in Assets/Modules/UIMaker/Resources/Prefab or Packages/com.unity.tools.uimaker/Resources/Prefab.");
             }
 
             rootVisualElement.Q<ListView>("PrefabListView")?.Rebuild();
