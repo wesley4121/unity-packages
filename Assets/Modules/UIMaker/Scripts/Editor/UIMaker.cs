@@ -310,6 +310,7 @@ namespace Modules.UIMaker
                 if (Selection.activeGameObject != null)
                 {
                     instance.transform.SetParent(Selection.activeGameObject.transform);
+                    instance.transform.localScale = Vector3.one;
                     instance.transform.localPosition = Vector3.zero;
                 }
 
